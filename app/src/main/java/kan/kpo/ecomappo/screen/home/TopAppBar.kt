@@ -3,6 +3,7 @@ package kan.kpo.ecomappo.screen.home
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,7 +20,11 @@ import kan.kpo.ecomappo.ui.theme.EcomAppOTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopAppBar(modifier: Modifier = Modifier) {
+fun MyTopAppBar(
+    modifier: Modifier = Modifier,
+    onCartClick: () -> Unit,
+    onProfileClick: () -> Unit,
+) {
     TopAppBar(
         title = {
             Text(
@@ -34,10 +39,10 @@ fun MyTopAppBar(modifier: Modifier = Modifier) {
             titleContentColor = Color.Blue
         ),
         actions = {
-            IconButton(onClick = {}) {
-               Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+            IconButton(onClick = {onCartClick()}) {
+                Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = "ShoppingCart")
             }
-            IconButton(onClick = {}) {
+            IconButton(onClick = {onProfileClick()}) {
                 Icon(imageVector = Icons.Default.AccountBox, contentDescription = "Account")
             }
         }
@@ -51,7 +56,7 @@ fun MyTopAppBar(modifier: Modifier = Modifier) {
 @Composable
 private fun TopAppBarPrev() {
     EcomAppOTheme {
-        MyTopAppBar()
+
     }
 
 }

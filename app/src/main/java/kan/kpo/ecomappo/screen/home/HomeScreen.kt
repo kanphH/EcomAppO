@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,56 +22,57 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kan.kpo.ecomappo.model.Category
 import kan.kpo.ecomappo.model.Product
+import kan.kpo.ecomappo.navigation.Screens
 import kan.kpo.ecomappo.ui.theme.EcomAppOTheme
+import kan.kpo.ecomappo.viewmodel.CategoryViewModel
+import kan.kpo.ecomappo.viewmodel.ProductViewModel
 
-val categories: List<Category> = listOf(
-    Category(1, "Food", "https://img.icons8.com/color/96/restaurant.png"),
-    Category(2, "Drink", "https://img.icons8.com/color/96/coffee-cup.png"),
-    Category(3, "Dessert", "https://img.icons8.com/color/96/cake.png"),
-    Category(4, "Pizza", "https://img.icons8.com/color/96/pizza.png"),
-    Category(5, "Burger", "https://img.icons8.com/color/96/hamburger.png")
 
-)
-
-val productList: List<Product> = listOf(
-    Product("1", "Pizza", 10.0, "https://img.icons8.com/color/96/pizza.png"),
-    Product("2", "Laptop", 110.0, "https://img.icons8.com/color/96/hamburger.png"),
-    Product("3", "Dessert", 55.5, "https://img.icons8.com/color/96/cake.png"),
-    Product("4", "Pizza", 552.5, "https://img.icons8.com/color/96/pizza.png"),
-    Product("5", "Burger", 515.5, "https://img.icons8.com/color/96/hamburger.png")
-
-)
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    onCartClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    productViewModel: ProductViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
+) {
+
+    // ✅ ใช้ LaunchedEffect แทน
+    LaunchedEffect(Unit) {
+        productViewModel.getAllProductInFirestore()
+    }
+
     Scaffold(
-        topBar = { MyTopAppBar() },
-        bottomBar = { BottomNavigation() },
+        topBar = { MyTopAppBar(onCartClick = onCartClick, onProfileClick = onProfileClick) },
+        bottomBar = { BottomNavigation(navController = navController) },
     ) { paddingValue ->
         Column(modifier = Modifier.padding(paddingValue)) {
             var searchQuery by remember { mutableStateOf("") }
-            val focusManager = LocalFocusManager.current
             SearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
-                onSearch = {//Search Logic}
-                },
+                onSearch = { /* Search Logic */ },
                 modifier = Modifier.padding(16.dp)
             )
-            //Search Section
 
-
-            //Categories Section
+            // Categories Section
+            val categories by categoryViewModel.categories.collectAsState()
 
             SectionTitle(
                 modifier = Modifier.fillMaxWidth(),
                 title = "Categories",
                 actionText = "See All"
             ) {
-
+                navController.navigate(Screens.Category.route)
             }
+
             var selectedCategory by remember { mutableStateOf(0) }
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -84,34 +87,43 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         isSelected = selectedCategory == index,
                         onClick = {
                             selectedCategory = index
-                            // navigation logic
+                            // ✅ ส่ง category.id แทน index
+                            navController.navigate(Screens.ProductList.createRoute(category.id.toString()))
                         }
                     )
                 }
-
             }
+
             Spacer(modifier = Modifier.height(16.dp))
-            SectionTitle(title = "Featured", actionText = "See all", onActionClick = {})
+
+            SectionTitle(
+                title = "Featured",
+                actionText = "See all",
+                onActionClick = {
+                    navController.navigate(Screens.Category.route)
+                }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            // ✅ ย้ายมาใส่ใน collectAsState เฉยๆ
+            val allProduct by productViewModel.allProducts.collectAsState()
+
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(productList) { product ->
+                items(allProduct) { product ->
                     FeaturedProducts(
                         product = product,
-                        onProductClick = {})
-
+                        onProductClick = {
+                            navController.navigate(Screens.ProductDetails.createRoute(product.id))
+                        }
+                    )
                 }
             }
         }
     }
-
-
-
-
-
 }
 
 
@@ -119,7 +131,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Composable
 private fun HomeScreenPrev() {
     EcomAppOTheme {
-        HomeScreen()
+        HomeScreen(navController = rememberNavController(),
+            onCartClick = {},onProfileClick = {})
     }
 
 }

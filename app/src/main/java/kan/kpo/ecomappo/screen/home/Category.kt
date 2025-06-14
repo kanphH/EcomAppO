@@ -18,8 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import kan.kpo.ecomappo.ui.theme.CategoryColor
 
 @Composable
@@ -49,10 +51,13 @@ fun Categories(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Icon(painter = rememberVectorPainter(image = Icons.Default.ShoppingCart),
-                contentDescription = null,
-                tint = if (isSelected) Color.White else Color.Black,
-                modifier = Modifier.size(10.dp))
+            // ✅ ใช้ AsyncImage เพื่อโหลดภาพจาก URL
+            AsyncImage(
+                model = icon, // ใช้ icon parameter ที่ส่งมา
+                contentDescription = text,
+                modifier = Modifier.size(24.dp),
+
+            )
         Text(text,
             color = if (isSelected) Color.White else Color.Black,
             style = MaterialTheme.typography.titleMedium,

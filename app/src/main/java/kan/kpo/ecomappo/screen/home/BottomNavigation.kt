@@ -20,42 +20,53 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import kan.kpo.ecomappo.navigation.Screens
+import androidx.compose.runtime.getValue
 
 @Composable
 fun BottomNavigation(
     modifier: Modifier = Modifier,
-    currentRoute: String = "Home", // รับ parameter แทนการ hardcode
-    onItemClick: (String) -> Unit = {}, // callback สำหรับ navigation
+    onItemClick: (String) -> Unit = {}, // callback สำหรับ navigation,
+    navController: NavController
 ) {
+
+//    import androidx.compose.runtime.getValue ถ้าเกิด Error ให้ import ตัวนี้
+    // converting the current navigation route to a state object
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+
     val items = listOf(
         BottomNavItem(
             title = "Home",
             icon = Icons.Default.Home,
-            route = "Home",
+            route = Screens.Home.route,
             badgeCount = 3382
         ),
         BottomNavItem(
             title = "Search",
             icon = Icons.Default.Search,
-            route = "Search",
+            route = Screens.Category.route,
             badgeCount = 0
         ),
         BottomNavItem(
             title = "Wishlist",
             icon = Icons.Default.Favorite,
-            route = "Wishlist",
+            route = Screens.Cart.route,
             badgeCount = 10
         ),
         BottomNavItem(
             title = "Cart",
             icon = Icons.Default.ShoppingCart,
-            route = "Cart",
+            route = Screens.Cart.route,
             badgeCount = 5
         ),
         BottomNavItem(
             title = "Profile",
             icon = Icons.Default.Person,
-            route = "Profile",
+            route = Screens.Profile.route,
             badgeCount = 0
         )
     )
@@ -69,7 +80,12 @@ fun BottomNavigation(
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
-                    onItemClick(item.route) // เรียก callback
+                    //navigating between screens
+                    navController.navigate(item.route){
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 icon = {
                     if (item.badgeCount > 0) {
@@ -107,7 +123,7 @@ fun BottomNavigation(
 @Preview
 @Composable
 private fun BottomPrev() {
-    BottomNavigation()
+
 
 
 }

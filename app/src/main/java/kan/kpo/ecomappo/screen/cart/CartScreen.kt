@@ -2,6 +2,7 @@ package kan.kpo.ecomappo.screen.cart
 
 import android.R.attr.top
 import android.util.Log.i
+import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,32 +32,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import kan.kpo.ecomappo.model.Product
-import kan.kpo.ecomappo.screen.cart.cartItem
-
-
-val cartItem = listOf(
-    Product(
-        "1", "Pizza", 10.0, "https://img.icons8.com/color/96/pizza.png"
-    ),
-    Product(
-        "2", "Laptop", 110.0, "https://img.icons8.com/color/96/hamburger.png"
-    ),
-    Product(
-        "3", "Dessert", 55.5, "https://img.icons8.com/color/96/cake.png"
-    ),
-
-
-    )
+import kan.kpo.ecomappo.screen.home.CustomButton
+import kan.kpo.ecomappo.viewmodel.CartViewModel
 
 
 @Composable
-fun CartScreen(modifier: Modifier = Modifier) {
+fun CartScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    cartViewModel: CartViewModel = hiltViewModel()
+) {
+
+    val cartItem by cartViewModel.cartItems.collectAsState(initial = emptyList())
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -76,17 +74,19 @@ fun CartScreen(modifier: Modifier = Modifier) {
                 Text(text = "Your cart is empty")
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = {}) {
+                Button(onClick = {
+                    navController.popBackStack()
+                }) {
                     Text(text = "Continue Shopping")
                 }
 
             }
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(cartItem) { items ->
+                items(cartItem) { item ->
                     CartItemCard(
-                        item = items,
-                        onRemoveItem = {/* Remove Item Logic */ }
+                        item = item,
+                        onRemoveItem = {cartViewModel.removeFromCart(item)},
                     )
 
 
@@ -112,46 +112,18 @@ fun CartScreen(modifier: Modifier = Modifier) {
                     )
                     // call viewModel to get Price
                     Text(
-                        text = "$1000",
+                        text = "$${cartViewModel.calculateToTal(cartItem)}",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-                var isPressed by remember { mutableStateOf(false) }
 
-                Button(
-                    onClick = { /* Checkout Logic */ },
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(50.dp)
-                        .scale(if (isPressed) 0.95f else 1f)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    isPressed = true
-                                    tryAwaitRelease()
-                                    isPressed = false
-                                }
-                            )
-                        },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF00BCD4)
-                    ),
-                    shape = RoundedCornerShape(25.dp),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 8.dp,
-                        pressedElevation = 2.dp
-                    )
-                ) {
-                    Icon(imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = null,
-                        )
-                    Spacer(modifier = Modifier.padding(start = 4.dp))
-                    Text(
-                        text = "Checkout",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                CustomButton(
+                    modifier = Modifier,
+                    text = "Checkout",
+                    icon = Icons.Default.ShoppingCart,
+                    onClick = {/* Paypal */}
+                )
+
             }
         }
 
@@ -160,9 +132,9 @@ fun CartScreen(modifier: Modifier = Modifier) {
 }
 
 
+
 @Preview(showBackground = true)
 @Composable
 private fun CartScreenPrev() {
-    CartScreen()
 
 }

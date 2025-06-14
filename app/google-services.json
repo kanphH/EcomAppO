@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830832236596",
+    "project_id": "ecomapp-e06b6",
+    "storage_bucket": "ecomapp-e06b6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830832236596:android:715e6084318113e1cb1261",
+        "android_client_info": {
+          "package_name": "kan.kpo.ecomappo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr-WV4I7HvIrDhyQ4vyntaYUKVeQYPr68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

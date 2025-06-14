@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,39 +47,55 @@ fun FeaturedProducts(
         )
     ) {
         Box {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier.padding(
+                    start = 12.dp,
+                    end = 12.dp,
+                    bottom = 12.dp
+                )
+            ) {
                 Image(
                     painter = rememberAsyncImagePainter(product.imageUrl),
                     contentDescription = product.name,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxWidth().height(100.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = product.name,
+                Text(
+                    text = product.name,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis) //มันคือจุดไข่ปลา ถ้าข้อความเกิน
+                    overflow = TextOverflow.Ellipsis
+                ) //มันคือจุดไข่ปลา ถ้าข้อความเกิน
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "$${product.price}",
+                    Text(
+                        text = "$${product.price}",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.Black
-                        )
+                    )
 
                 }
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(painter = painterResource(id = R.drawable.ic_star),
-                      contentDescription = "Rating",
-                      tint = Color.Unspecified,
-                      modifier = Modifier.size(24.dp))
-                  Spacer(modifier = Modifier.width(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_star),
+                        contentDescription = "Rating",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .offset(x = (-4).dp)
+                    )
 
-                  Text(text = product.id,
-                      style = MaterialTheme.typography.titleMedium,
-                      color = Color.Black
-                  )
 
-              }
+                    Text(
+                        text = product.id,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
+                        modifier = Modifier.offset(x = (-4).dp)
+                    )
+
+                }
 
             }
 
@@ -92,14 +109,16 @@ fun FeaturedProducts(
         }
     }
 }
+
 @Preview
 @Composable
 private fun FeaturedProductsPrev() {
-    FeaturedProducts(modifier = Modifier.fillMaxWidth(), product = Product(
-        id = "1",
-        name = "Pizza",
-        price = 10.0,
-    ), onProductClick = {})
+    FeaturedProducts(
+        modifier = Modifier.fillMaxWidth(), product = Product(
+            id = "1",
+            name = "Pizza",
+            price = 10.0,
+        ), onProductClick = {})
 
 
 }

@@ -62,11 +62,11 @@ fun CartItemCard(modifier: Modifier = Modifier,
            Column (horizontalAlignment = Alignment.CenterHorizontally){
                Row (verticalAlignment = Alignment.CenterVertically,
                    ){
-                   Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
+
 
 
                }
-               IconButton(onClick = {}) {
+               IconButton(onClick = {onRemoveItem()}) {
                    Image(imageVector = Icons.Default.Delete,
                        contentDescription = "Remove Item")
                }
