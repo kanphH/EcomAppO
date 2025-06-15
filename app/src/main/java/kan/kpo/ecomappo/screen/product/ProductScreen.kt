@@ -67,13 +67,15 @@ fun ProductScreen(
                 items(products) { product ->
                     ProductItems(
                         product = product,
-                        onAddToCart = { cartViewModel.addToCart(product) },
+                        onAddToCart = { cartViewModel.addToCart(product)
+                            navController.navigate(Screens.Cart.route)},
                         //navigate to ProductScreenDetail with the product Id
                         onClick = {
                             navController.navigate(
                                 Screens.ProductDetails.createRoute(
                                     product.id
                                 )
+
                             )
                         })
 

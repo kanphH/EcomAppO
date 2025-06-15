@@ -1,6 +1,7 @@
 package kan.kpo.ecomappo
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,18 +40,31 @@ class MainActivity : ComponentActivity() {
                 // Navigation System
                 val navController = rememberNavController()
 
-                //AuthViewModel
+                //AuthViewModel - ใช้ single instance
                 val authViewModel: AuthViewModel = hiltViewModel()
 
                 // properly observe the authentication state
                 val authState by authViewModel.authState.collectAsState()
-                val isLoggedIn = authState is AuthViewModel.AuthState.Success
+                val currentUser by authViewModel.currentUser.collectAsState()
+
+                // เช็คจาก currentUser แทน authState
+                val isLoggedIn by remember {
+                    derivedStateOf { currentUser != null }
+                }
+
+                // Debug logging
+                LaunchedEffect(authState, currentUser) {
+                    Log.d("MainActivity", "Auth state: $authState")
+                    Log.d("MainActivity", "Current user: ${currentUser?.email}")
+                    Log.d("MainActivity", "Is logged in: $isLoggedIn")
+                }
 
                 NavHost(navController = navController, startDestination = Screens.Home.route) {
                     composable(Screens.Home.route) {
                         HomeScreen(
                             navController = navController,
                             onProfileClick = {
+                                Log.d("MainActivity", "Profile click - isLoggedIn: $isLoggedIn")
                                 if(isLoggedIn) {
                                     navController.navigate(Screens.Profile.route)
                                 } else {
@@ -66,14 +80,14 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(Screens.Profile.route) {
-                        val currentUser by authViewModel.currentUser.collectAsState()
-
-                        if (currentUser != null) {
+                        // ตรวจสอบว่า user login อยู่หรือไม่
+                        if (isLoggedIn && currentUser != null) {
                             ProfileScreen(
                                 navController = navController,
                                 onSignOut = {
+                                    Log.d("MainActivity", "Sign out initiated")
                                     authViewModel.signOut()
-                                    navController.navigate(Screens.LoginScreen.route) {
+                                    navController.navigate(Screens.Home.route) {
                                         popUpTo(Screens.Home.route) {
                                             inclusive = false
                                         }
@@ -81,7 +95,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         } else {
+                            // ถ้าไม่ login อยู่ ให้ไปหน้า login
                             LaunchedEffect(Unit) {
+                                Log.d("MainActivity", "User not logged in, navigating to login")
                                 navController.navigate(Screens.LoginScreen.route) {
                                     popUpTo(Screens.Home.route) {
                                         inclusive = false
@@ -122,7 +138,14 @@ class MainActivity : ComponentActivity() {
                         SignUpScreen(
                             navController = navController,
                             onNavigateToLogin = { navController.navigate(Screens.LoginScreen.route) },
-                            onSignUpSuccess = { navController.navigate(Screens.Home.route) },
+                            onSignUpSuccess = {
+                                Log.d("MainActivity", "Sign up success, navigating to home")
+                                navController.navigate(Screens.Home.route) {
+                                    popUpTo(Screens.SignUpScreen.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            },
                             onSignUpError = {},
                         )
                     }
@@ -131,7 +154,14 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(
                             navController = navController,
                             onNavigateToSignUp = { navController.navigate(Screens.SignUpScreen.route) },
-                            onLoginSuccess = { navController.navigate(Screens.Home.route) },
+                            onLoginSuccess = {
+                                Log.d("MainActivity", "Login success, navigating to home")
+                                navController.navigate(Screens.Home.route) {
+                                    popUpTo(Screens.LoginScreen.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            },
                             onLoginError = {}
                         )
                     }

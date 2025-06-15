@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -36,6 +37,7 @@ import coil3.request.error
 import coil3.request.placeholder
 import kan.kpo.ecomappo.R
 import kan.kpo.ecomappo.model.Product
+import kan.kpo.ecomappo.navigation.Screens
 
 @Composable
 fun ProductItems(
@@ -43,6 +45,7 @@ fun ProductItems(
     product: Product,
     onAddToCart: () -> Unit,
     onClick: () -> Unit,
+
 ) {
     Card(
         modifier = modifier
@@ -109,7 +112,8 @@ fun ProductItems(
             }
 
             IconButton(
-                onClick = { onAddToCart() },
+                onClick = { onAddToCart()
+                         },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
@@ -134,14 +138,6 @@ fun ProductItems(
 @Preview(showBackground = true)
 @Composable
 fun ProductItemsPreview() {
-    ProductItems(
-        product = Product(
-            name = "Delicious Pizza",
-            price = 299.0,
-            imageUrl = "https://img.icons8.com/color/96/pizza.png"
-        ),
-        onAddToCart = { },
-        onClick = { }
-    )
+
 
 }

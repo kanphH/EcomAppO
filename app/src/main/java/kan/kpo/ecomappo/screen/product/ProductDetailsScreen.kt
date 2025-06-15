@@ -4,6 +4,7 @@ import android.R.attr.fontWeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +26,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +45,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import kan.kpo.ecomappo.R
 import kan.kpo.ecomappo.model.Product
+import kan.kpo.ecomappo.navigation.Screens
 import kan.kpo.ecomappo.navigation.Screens.ProductDetails
 import kan.kpo.ecomappo.viewmodel.CartViewModel
 import kan.kpo.ecomappo.viewmodel.ProductDetaislViewModel
@@ -51,23 +60,22 @@ fun ProductDetailsScreen(
     cartViewModel: CartViewModel = hiltViewModel()
 ) {
 
-
     LaunchedEffect(productId) {
         productViewModel.fetchProductDetails(productId)
     }
     val productState = productViewModel.product.collectAsState()
     val product = productState.value
 
+
     if (product == null) {
         Text(text = "Product Not Found")
-
     } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // ใช้ Box เพื่อให้ icon ซ้อนทับกับภาพ
+            // Product Image Box
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -83,29 +91,11 @@ fun ProductDetailsScreen(
                         .fillMaxSize()
                         .clip(RoundedCornerShape(12.dp))
                 )
-
-                // Icon ที่จะอยู่มุมขวาบน
-                IconButton(
-                    onClick = { cartViewModel.addToCart(product) },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd) // จัดตำแหน่งที่มุมขวาบน
-                        .padding(8.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "Add to Cart",
-                        tint = Color.White //
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //Product Name
+
             Text(
                 text = product.name,
                 style = MaterialTheme.typography.bodyMedium,
@@ -113,7 +103,7 @@ fun ProductDetailsScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            //Product Price
+
             Text(
                 text = "฿${product.price}",
                 style = MaterialTheme.typography.headlineSmall,
@@ -122,15 +112,41 @@ fun ProductDetailsScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            //Product Description
+
             Text(
                 text = product.categoryId ?: "Category Not Found",
                 style = MaterialTheme.typography.bodyMedium
             )
+
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+
+                Button(
+                    onClick = {
+                        cartViewModel.addToCart(product)
+                        navController.navigate(Screens.Cart.route)
+                    },
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(120.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "Add to Cart",
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                }
+            }
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 private fun ProductDetailsScreenPreview() {

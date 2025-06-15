@@ -27,21 +27,38 @@ class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewMo
         data class Error(val message: String) : AuthState()
     }
 
-    private val _authState = MutableStateFlow<AuthState>(
-        if (auth.currentUser != null)
-            AuthState.Success(auth.currentUser!!.uid)
-        else AuthState.Idle
-    )
-
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-
-    private val _currentUser = MutableStateFlow<UserProfile?>(getCurrentUserProfile())
+    private val _currentUser = MutableStateFlow<UserProfile?>(null)
     val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
 
-    private fun getCurrentUserProfile(): UserProfile? {
-        return auth.currentUser?.let { firebaseUser ->
-            UserProfile(
+    // เพิ่ม Auth State Listener
+    private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        val firebaseUser = firebaseAuth.currentUser
+        if (firebaseUser != null) {
+            _authState.value = AuthState.Success(firebaseUser.uid)
+            _currentUser.value = UserProfile(
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
+                email = firebaseUser.email ?: ""
+            )
+            Log.d("AuthViewModel", "User logged in: ${firebaseUser.email}")
+        } else {
+            _authState.value = AuthState.Idle
+            _currentUser.value = null
+            Log.d("AuthViewModel", "User logged out")
+        }
+    }
+
+    init {
+        // เพิ่ม listener ตั้งแต่เริ่มต้น
+        auth.addAuthStateListener(authStateListener)
+
+        // ตั้งค่าเริ่มต้นถ้ามี user อยู่แล้ว
+        auth.currentUser?.let { firebaseUser ->
+            _authState.value = AuthState.Success(firebaseUser.uid)
+            _currentUser.value = UserProfile(
                 uid = firebaseUser.uid,
                 name = firebaseUser.displayName ?: "",
                 email = firebaseUser.email ?: ""
@@ -49,14 +66,21 @@ class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewMo
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        // ลบ listener เมื่อ ViewModel ถูกทำลาย
+        auth.removeAuthStateListener(authStateListener)
+    }
+
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
                 val result = auth.signInWithEmailAndPassword(email, password).await()
-                _authState.value = AuthState.Success(result.user!!.uid)
-                _currentUser.value = getCurrentUserProfile()
+                Log.d("AuthViewModel", "Sign in successful: ${result.user?.email}")
+                // AuthStateListener จะจัดการการอัพเดต state ให้อัตโนมัติ
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Sign in failed: ${e.message}")
                 _authState.value = AuthState.Error(e.message ?: "Login failed")
             }
         }
@@ -67,17 +91,18 @@ class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewMo
             _authState.value = AuthState.Loading
             try {
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
-                _authState.value = AuthState.Success(result.user!!.uid)
-                _currentUser.value = getCurrentUserProfile()
+                Log.d("AuthViewModel", "Sign up successful: ${result.user?.email}")
+                // AuthStateListener จะจัดการการอัพเดต state ให้อัตโนมัติ
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Sign up failed: ${e.message}")
                 _authState.value = AuthState.Error(e.message ?: "Registration failed")
             }
         }
     }
 
     fun signOut() {
+        Log.d("AuthViewModel", "Signing out user")
         auth.signOut()
-        _authState.value = AuthState.Idle
-
+        // AuthStateListener จะจัดการการอัพเดต state ให้อัตโนมัติ
     }
 }

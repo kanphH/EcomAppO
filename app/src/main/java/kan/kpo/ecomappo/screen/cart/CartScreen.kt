@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import kan.kpo.ecomappo.model.Product
+import kan.kpo.ecomappo.navigation.Screens
 import kan.kpo.ecomappo.screen.home.CustomButton
 import kan.kpo.ecomappo.viewmodel.CartViewModel
 
@@ -54,6 +55,7 @@ fun CartScreen(
 ) {
 
     val cartItem by cartViewModel.cartItems.collectAsState(initial = emptyList())
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -75,32 +77,33 @@ fun CartScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
-                    navController.popBackStack()
+                    navController.navigate(Screens.Home.route)
                 }) {
                     Text(text = "Continue Shopping")
                 }
-
             }
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(cartItem) { item ->
                     CartItemCard(
                         item = item,
-                        onRemoveItem = {cartViewModel.removeFromCart(item)},
+                        onRemoveItem = { cartViewModel.removeFromCart(item) },
+                        onIncreaseQuantity = { cartViewModel.increaseQuantity(item) },
+                        onDecreaseQuantity = {
+                            if (item.quantity > 1) {
+                                cartViewModel.decreaseQuantity(item)
+                            }
+                        }
                     )
-
-
                 }
             }
 
-            // checkout Section
-
+            // Checkout Section
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -110,10 +113,10 @@ fun CartScreen(
                         text = "Total:",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    // call viewModel to get Price
                     Text(
-                        text = "$${cartViewModel.calculateToTal(cartItem)}",
-                        style = MaterialTheme.typography.titleMedium
+                        text = "฿${cartViewModel.calculateToTal(cartItem)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -121,17 +124,12 @@ fun CartScreen(
                     modifier = Modifier,
                     text = "Checkout",
                     icon = Icons.Default.ShoppingCart,
-                    onClick = {/* Paypal */}
+                    onClick = {navController.navigate(Screens.Home.route)}
                 )
-
             }
         }
-
-
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable

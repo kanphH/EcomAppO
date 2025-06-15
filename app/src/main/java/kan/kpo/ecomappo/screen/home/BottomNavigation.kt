@@ -52,12 +52,6 @@ fun BottomNavigation(
             badgeCount = 0
         ),
         BottomNavItem(
-            title = "Wishlist",
-            icon = Icons.Default.Favorite,
-            route = Screens.Cart.route,
-            badgeCount = 0
-        ),
-        BottomNavItem(
             title = "Cart",
             icon = Icons.Default.ShoppingCart,
             route = Screens.Cart.route,
