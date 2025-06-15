@@ -40,12 +40,11 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    // เพิ่มจำนวน +1 (ปุ่ม + ใน Cart)
     fun increaseQuantity(product: Product) {
         updateQuantity(product.id, product.quantity + 1)
     }
 
-    // ลดจำนวน -1 (ปุ่ม - ใน Cart)
+
     fun decreaseQuantity(product: Product) {
         updateQuantity(product.id, product.quantity - 1)
     }

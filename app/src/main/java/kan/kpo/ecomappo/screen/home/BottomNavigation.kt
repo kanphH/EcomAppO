@@ -43,7 +43,7 @@ fun BottomNavigation(
             title = "Home",
             icon = Icons.Default.Home,
             route = Screens.Home.route,
-            badgeCount = 3382
+            badgeCount = 0
         ),
         BottomNavItem(
             title = "Search",
@@ -55,13 +55,13 @@ fun BottomNavigation(
             title = "Wishlist",
             icon = Icons.Default.Favorite,
             route = Screens.Cart.route,
-            badgeCount = 10
+            badgeCount = 0
         ),
         BottomNavItem(
             title = "Cart",
             icon = Icons.Default.ShoppingCart,
             route = Screens.Cart.route,
-            badgeCount = 5
+            badgeCount = 0
         ),
         BottomNavItem(
             title = "Profile",

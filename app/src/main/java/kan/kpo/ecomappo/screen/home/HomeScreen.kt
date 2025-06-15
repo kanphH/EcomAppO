@@ -31,7 +31,7 @@ import kan.kpo.ecomappo.navigation.Screens
 import kan.kpo.ecomappo.ui.theme.EcomAppOTheme
 import kan.kpo.ecomappo.viewmodel.CategoryViewModel
 import kan.kpo.ecomappo.viewmodel.ProductViewModel
-
+import kan.kpo.ecomappo.viewmodel.SearchViewModel
 
 
 @Composable
@@ -41,13 +41,19 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit,
     productViewModel: ProductViewModel = hiltViewModel(),
-    categoryViewModel: CategoryViewModel = hiltViewModel()
+    categoryViewModel: CategoryViewModel = hiltViewModel(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
+
 ) {
+
 
     // ✅ ใช้ LaunchedEffect แทน
     LaunchedEffect(Unit) {
         productViewModel.getAllProductInFirestore()
     }
+    val focusManager = LocalFocusManager.current
+
+
 
     Scaffold(
         topBar = { MyTopAppBar(onCartClick = onCartClick, onProfileClick = onProfileClick) },
@@ -58,13 +64,19 @@ fun HomeScreen(
             SearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
-                onSearch = { /* Search Logic */ },
+                onSearch = { searchViewModel.searchProduct(searchQuery)
+                           focusManager.clearFocus()},
                 modifier = Modifier.padding(16.dp)
             )
 
+            if (searchQuery.isNotBlank()){
+                SearchResult(
+                    navController = navController)
+
+            }
+
             // Categories Section
             val categories by categoryViewModel.categories.collectAsState()
-
             SectionTitle(
                 modifier = Modifier.fillMaxWidth(),
                 title = "Categories",
@@ -106,7 +118,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ✅ ย้ายมาใส่ใน collectAsState เฉยๆ
             val allProduct by productViewModel.allProducts.collectAsState()
 
             LazyRow(

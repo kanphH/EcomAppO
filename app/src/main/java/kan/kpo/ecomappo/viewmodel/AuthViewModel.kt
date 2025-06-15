@@ -1,5 +1,6 @@
 package kan.kpo.ecomappo.viewmodel
 
+import android.util.Log
 import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+
+
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewModel() {
@@ -30,30 +33,29 @@ class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewMo
         else AuthState.Idle
     )
 
-    // เปิดให้ภายนอกแต่เป็น read-only
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    val isLoggedIn: Boolean
-        get() = authState.value is AuthState.Success
 
-    // getting current user
-    val currentUser = auth.currentUser?.let { firebaseUser ->
-        UserProfile(
-            uid = firebaseUser.uid,
-            name = firebaseUser.displayName ?: "",
-            email = firebaseUser.email ?: ""
-        )
+    private val _currentUser = MutableStateFlow<UserProfile?>(getCurrentUserProfile())
+    val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
 
+    private fun getCurrentUserProfile(): UserProfile? {
+        return auth.currentUser?.let { firebaseUser ->
+            UserProfile(
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
+                email = firebaseUser.email ?: ""
+            )
+        }
     }
 
-
-    // Functions สำหรับ authentication (Coroutines approach)
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
                 val result = auth.signInWithEmailAndPassword(email, password).await()
                 _authState.value = AuthState.Success(result.user!!.uid)
+                _currentUser.value = getCurrentUserProfile()
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Login failed")
             }
@@ -66,15 +68,16 @@ class AuthViewModel @Inject constructor(private val auth: FirebaseAuth) : ViewMo
             try {
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
                 _authState.value = AuthState.Success(result.user!!.uid)
+                _currentUser.value = getCurrentUserProfile()
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Registration failed")
             }
         }
     }
+
     fun signOut() {
         auth.signOut()
         _authState.value = AuthState.Idle
+
     }
-
-
 }

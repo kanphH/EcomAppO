@@ -1,7 +1,9 @@
 package kan.kpo.ecomappo.screen.home
 
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,16 +11,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +34,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import kan.kpo.ecomappo.navigation.Screens
+import kan.kpo.ecomappo.screen.product.ProductItems
+import kan.kpo.ecomappo.viewmodel.CartViewModel
+import kan.kpo.ecomappo.viewmodel.SearchViewModel
 
 @Composable
 fun SearchBar(
@@ -35,7 +47,8 @@ fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
-) {
+
+    ) {
     Box(
         modifier = modifier
             .height(60.dp)
@@ -82,12 +95,46 @@ fun SearchBar(
     }
 }
 
-@Preview
+
+
 @Composable
-private fun SearchBarPrev() {
-    SearchBar(
-        modifier = Modifier.height(80.dp),
-        query = "", onQueryChange = {}, onSearch = {})
+fun SearchResult(
+    modifier: Modifier = Modifier,
+    searchViewModel: SearchViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel(),
+    navController: NavController,
+) {
+    val searchResult by searchViewModel.searchResult.collectAsState()
+    val isSearching by searchViewModel.isSearching.collectAsState()
 
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "Search Result",
+            fontWeight = FontWeight.Bold,
+        )
 
+        if (isSearching) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                items(searchResult) { product ->
+                    ProductItems(
+                        product = product,
+                        onAddToCart = { cartViewModel.addToCart(product) },
+                        onClick = {
+                            navController.navigate(
+                                Screens.ProductDetails.createRoute(product.id.toString())
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
 }

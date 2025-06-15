@@ -75,7 +75,7 @@ fun ProductScreen(
                                     product.id
                                 )
                             )
-                        }) //RoomDataBase *Insert
+                        })
 
                 }
             }

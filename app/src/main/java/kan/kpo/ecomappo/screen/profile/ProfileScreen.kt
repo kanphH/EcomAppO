@@ -1,6 +1,7 @@
 package kan.kpo.ecomappo.screen.profile
 
 import android.R.attr.fontWeight
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kan.kpo.ecomappo.model.UserProfile
+import kan.kpo.ecomappo.navigation.Screens
 import kan.kpo.ecomappo.screen.home.CustomButton
 import kan.kpo.ecomappo.viewmodel.AuthViewModel
 
@@ -56,10 +60,10 @@ fun ProfileScreen(
     navController: NavController,
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    // Observe authentication state และ current user
+    val authState by authViewModel.authState.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
 
-    //Getting Current User
-
-    val currentUser by remember { mutableStateOf(authViewModel.currentUser) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -67,7 +71,6 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(48.dp))
-
 
         Box(
             modifier = Modifier
@@ -101,28 +104,27 @@ fun ProfileScreen(
         Card(
             modifier = Modifier.width(200.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-
-            ) {
+        ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = currentUser?.name.toString(),
+                    text = currentUser?.name ?: "No Name",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = currentUser?.email.toString(),
+                    text = currentUser?.email ?: "No Email",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "ID: ${currentUser?.uid.toString()}",
+                    text = "ID: ${currentUser?.uid ?: "No ID"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
@@ -130,16 +132,19 @@ fun ProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
-        CustomButton(modifier = Modifier,
+
+        CustomButton(
+            modifier = Modifier,
             text = "Sign out",
             icon = Icons.Default.Face,
-            onClick = onSignOut
-           )
-
-
+            onClick = {
+                Log.d("ProfileScreen", "Sign out button clicked")
+                Log.d("ProfileScreen", "Current auth state: $authState")
+                onSignOut() // เรียก callback ที่ MainActivity ส่งมา
+            }
+        )
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 private fun ProfileScreenPrev() {

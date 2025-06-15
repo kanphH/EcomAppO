@@ -33,7 +33,7 @@ fun CustomButton(modifier: Modifier = Modifier,
 
 
     Button(
-        onClick = { /* Checkout Logic */ },
+        onClick = { onClick() },
         modifier = modifier
             .fillMaxWidth(0.5f)
             .height(50.dp)
